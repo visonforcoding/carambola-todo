@@ -26,5 +26,25 @@ export default function (/* { store, ssrContext } */) {
     base: process.env.VUE_ROUTER_BASE
   })
 
+  Router.beforeEach((to, from, next) => {
+    const token = sessionStorage.getItem('token');
+    // store.getters('isLogin')
+    if (to.meta.requireLogin) {
+      //需要检测登录
+      if (token) {
+        next();
+      } else {
+        console.log('前往登录...')
+        next({
+          path: '/login'
+        });
+      }
+    } else {
+      next();
+    }
+  })
+
+  return Router
+
   return Router
 }

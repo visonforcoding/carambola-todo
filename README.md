@@ -2,7 +2,7 @@
 
 a todo list app by quasar+electron
 
-![](https://vison-blog.oss-cn-beijing.aliyuncs.com/20210218163843.png)
+![](https://vison-blog.oss-cn-beijing.aliyuncs.com/20210330200044.png)
 
 ## Install the dependencies
 ```bash
@@ -11,7 +11,7 @@ yarn
 
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
 ```bash
-quasar dev
+quasar dev -m electron
 ```
 
 ### Lint the files

@@ -12,10 +12,10 @@
         />
 
         <q-toolbar-title>
-          Quasar App
+          Carambola Todo
         </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <div> v{{ $q.version }}</div>
       </q-toolbar>
     </q-header>
 
@@ -38,6 +38,18 @@
           v-bind="link"
         />
       </q-list>
+      <q-item
+        clickable
+        v-ripple
+        @click="loginOut"
+        active-class="my-menu-link"
+      >
+        <q-item-section avatar>
+          <q-icon name="send" />
+        </q-item-section>
+
+        <q-item-section>退出</q-item-section>
+      </q-item>
     </q-drawer>
 
     <q-page-container>
@@ -48,20 +60,9 @@
 
 <script>
 import EssentialLink from 'components/EssentialLink.vue'
+import { loginOut } from 'src/api/loginReq'
 
 const linksData = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
   {
     title: 'Discord Chat Channel',
     caption: 'chat.quasar.dev',
@@ -72,25 +73,7 @@ const linksData = [
     title: 'Forum',
     caption: 'forum.quasar.dev',
     icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
+    link: '/user/login-out'
   }
 ]
 
@@ -101,6 +84,29 @@ export default {
     return {
       leftDrawerOpen: false,
       essentialLinks: linksData
+    }
+  },
+  created () {
+
+  },
+  methods: {
+
+    loginOut (values) {
+      loginOut(this.loginInfo).then((response) => {
+        console.log(response)
+        if (response.code === 0) {
+          sessionStorage.clear()
+          this.$router.push('/login')
+        } else {
+          this.$notify({
+            group: 'common',
+            // title: "系统错误",
+            text: response.msg,
+            type: 'error'
+          })
+        }
+      })
+      this.loading = false
     }
   }
 }

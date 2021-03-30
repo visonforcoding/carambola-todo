@@ -1,119 +1,26 @@
 <template>
   <q-page class="bg-white">
-    <div
-      class="row q-mt-xs"
-      group="columns"
-    >
-      <div class="col-3 rounded-borders q-px-xs">
-        <q-card class="q-pa-xs custom_bg ">
-          <q-item style="cursor: move;" class="q-pa-none text-white q-pa-sm rounded-borders">
-            <q-item-section class="text-h6 text-weight-bolder text-color">待办</q-item-section>
-            <q-item-section avatar>
-              <q-icon name="more_vert" class="cursor-pointer">
-                <q-menu transition-show="fade" transition-hide="fade">
-                  <q-list style="min-width: 100px">
-                    <q-item clickable>
-                      <q-item-section>Remove</q-item-section>
-                    </q-item>
-                    <q-item clickable>
-                      <q-item-section>Option 1</q-item-section>
-                    </q-item>
-                    <q-item clickable>
-                      <q-item-section>Option 2</q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-menu>
-              </q-icon>
-            </q-item-section>
-          </q-item>
-          <q-scroll-area
-            :thumb-style="thumbStyle"
-            :bar-style="barStyle"
-            :style="{'height': getHeight}"
-            class="col"
-            ref="first"
-          >
-            <draggable
-              class="list-group"
-              :list="planned_task"
-              group="tasks"
-              v-bind="dragOptions"
-              @start="drag = true"
-              @end="drag = false"
-            >
-              <q-card
-                v-for="(item, index) in planned_task"
-                v-bind:key="index"
-                class="rounded-borders q-my-sm"
-                @mouseover="$set(task_selected_index,'planned',index)"
-                @mouseleave="task_selected_index.planned = null"
-              >
-                <q-card-section class="row q-pa-sm">
-                  <div class="col-12">
-                    <span class="text-weight-bold text-h6 q-ml-sm">{{item.title}}</span>
-                    <span class="float-right text-grey-8 q-mt-sm">{{item.label}}
-                    <q-icon
-                      filled
-                      size="xs"
-                      name="close"
-                      class="absolute-top-right q-mr-md q-mt-xs text-red"
-                      v-if="index==task_selected_index.planned"
-                      @click="deleteTask('panned', task_selected_index.planned)"
-                    />
-                    </span>
-                  </div>
-                </q-card-section>
-                <q-card-section class="q-pa-sm">
-                  <q-chip dense v-for="(tag, index) in item.tags" :key="index" :color="tag.color" text-color="white">
-                    {{tag.name}}
-                  </q-chip>
-                </q-card-section>
-                <q-card-section class="q-pa-sm text-grey-8">
-                  {{item.description}}
-                </q-card-section>
-              </q-card>
-            </draggable>
-
-            <q-card class="full-width" v-if="add_model.planned">
-              <q-card-section>
-                <div class="text-h6">
-                  Add Task
-                </div>
-              </q-card-section>
-              <q-card-section class="q-pa-sm">
-                <q-input dense v-model="add_data.planned.title" label="Title" outlined/>
-                <q-input dense class="q-mt-sm" v-model="add_data.planned.label" label="Label" outlined/>
-                <q-input dense class="q-mt-sm" v-model="add_data.planned.description" label="Description" outlined/>
-              </q-card-section>
-              <q-card-actions align="right" class="q-pa-sm text-grey-8">
-                <q-btn label="Add" color="indigo-5" class="text-capitalize"></q-btn>
-                <q-btn label="Cancel" color="primary" class="text-capitalize" @click="add_model.planned=false"></q-btn>
-              </q-card-actions>
-            </q-card>
-            <q-item v-else>
-              <q-btn icon="add" rounded flat label="Add Task" @click="add_model.planned=true"/>
-            </q-item>
-          </q-scroll-area>
-
-        </q-card>
-      </div>
-
-      <div class="col-3 q-px-xs">
-        <q-card class="q-pa-xs custom_bg ">
+    <div class="row q-mt-xs" group="columns">
+      <div
+        v-for="(list, index) in taskLists"
+        class="col-3 q-px-xs"
+        v-bind:key="index"
+        :title="list.name"
+      >
+        <q-card class="q-pa-xs custom_bg " style="padding:0px 15px auto 10px">
           <q-item style="cursor: move;" class="q-pa-none text-white q-pa-sm">
-            <q-item-section class="text-h6 text-weight-bolder text-color">在办</q-item-section>
+            <q-item-section class="text-h6 text-weight-bolder text-color">{{
+              list.name
+            }}</q-item-section>
             <q-item-section avatar>
               <q-icon name="more_vert" class="cursor-pointer">
                 <q-menu transition-show="fade" transition-hide="fade">
                   <q-list style="min-width: 100px">
                     <q-item clickable>
-                      <q-item-section>Remove</q-item-section>
+                      <q-item-section>删除</q-item-section>
                     </q-item>
                     <q-item clickable>
-                      <q-item-section>Option 1</q-item-section>
-                    </q-item>
-                    <q-item clickable>
-                      <q-item-section>Option 2</q-item-section>
+                      <q-item-section>重命名</q-item-section>
                     </q-item>
                   </q-list>
                 </q-menu>
@@ -123,445 +30,381 @@
           <q-scroll-area
             :thumb-style="thumbStyle"
             :bar-style="barStyle"
-            :style="{'height': getHeight}"
+            :style="{ height: getHeight }"
+            style="padding-right:15px;padding-left:10px"
             class="col"
             ref="first"
           >
             <draggable
               class="list-group"
-              :list="wip_task"
+              :list="list.tasks"
               group="tasks"
               v-bind="dragOptions"
               @start="drag = true"
-              @end="drag = false"
+              @end="onEnd"
+              @change="log"
+              :move="checkMove"
+              :id="list.id"
+              v-bind:listid="list"
+              :componentData="list"
             >
               <q-card
-                v-for="(item, index) in wip_task"
-                v-bind:key="index"
+                v-for="(task, index) in list.tasks"
+                v-bind:key="task.id"
                 class="rounded-borders q-my-sm"
-                @mouseover="task_selected_index.wip = index"
-                @mouseleave="task_selected_index.wip = null"
+                @mouseover="$set(task_selected_index, 'planned', task.id)"
               >
                 <q-card-section class="row q-pa-sm">
                   <div class="col-12">
-                    <span class="text-weight-bold text-h6 q-ml-sm">{{item.title}}</span>
-                    <span class="float-right text-grey-8 q-mt-sm">{{item.label}}
-                    <q-icon
-                      filled
-                      size="xs"
-                      name="close"
-                      class="absolute-top-right q-mr-md q-mt-xs text-red"
-                      v-if="index==task_selected_index.wip"
-                      @click="deleteTask('wip', task_selected_index.wip)"
-                    />
+                    <span class="text-weight-bold text-h6 q-ml-sm">{{
+                      task.name
+                    }}</span>
+                    <span
+                      class="float-right text-grey-8 q-mt-sm"
+                      style="padding-right:12px"
+                    >
+                      <timeago :datetime="task.createTime" :auto-update="60">
+                      </timeago>
+                    </span>
+                    <span
+                      class="float-right"
+                      style="position: absolute; width: 14px; height: 24px; right: 5px;"
+                    >
+                      <q-item-section
+                        taskEdit
+                        v-if="task.id == task_selected_index.planned"
+                      >
+                        <q-icon
+                          size="sm"
+                          name="more_vert"
+                          class="cursor-pointer"
+                        >
+                          <q-menu transition-show="fade" transition-hide="fade">
+                            <q-list style="min-width: 100px">
+                              <q-item clickable>
+                                <q-item-section @click="deleteTask(task.id)"
+                                  >删除</q-item-section
+                                >
+                              </q-item>
+                              <q-item clickable>
+                                <q-item-section>重命名</q-item-section>
+                              </q-item>
+                            </q-list>
+                          </q-menu>
+                        </q-icon>
+                      </q-item-section>
                     </span>
                   </div>
                 </q-card-section>
-                <q-card-section class="q-pa-sm">
-                  <q-chip dense v-for="(tag, index) in item.tags" :key="index" :color="tag.color" text-color="white">
-                    {{tag.name}}
+                <q-card-section
+                  style="cursor:pointer"
+                  class="q-pa-sm"
+                  @click="clickTask(task.id)"
+                >
+                  <q-chip
+                    dense
+                    v-for="tag in task.tags"
+                    :key="tag.id"
+                    :color="tag.color"
+                    text-color="white"
+                  >
+                    {{ tag.name }}
                   </q-chip>
-                </q-card-section>
-                <q-card-section class="q-pa-sm text-grey-8">
-                  {{item.description}}
+                  <div>
+                    {{ task.detail }}
+                  </div>
                 </q-card-section>
               </q-card>
             </draggable>
 
-            <q-card class="full-width" v-if="add_model.wip">
+            <q-card class="full-width" v-if="add_model.wip === index">
               <q-card-section>
                 <div class="text-h6">
-                  Add Task
+                  添加任务
                 </div>
               </q-card-section>
               <q-card-section class="q-pa-sm">
-                <q-input dense v-model="add_data.wip.title" label="Title" outlined/>
-                <q-input dense class="q-mt-sm" v-model="add_data.wip.label" label="Label" outlined/>
-                <q-input dense class="q-mt-sm" v-model="add_data.wip.description" label="Description" outlined/>
+                <q-input
+                  dense
+                  v-model="add_data.task.name"
+                  label="Title"
+                  outlined
+                />
+                <!-- <q-input dense class="q-mt-sm" v-model="add_data.wip.label" label="Label" outlined/> -->
+                <q-input
+                  dense
+                  class="q-mt-sm"
+                  v-model="add_data.task.detail"
+                  label="Description"
+                  outlined
+                />
               </q-card-section>
               <q-card-actions align="right" class="q-pa-sm text-grey-8">
-                <q-btn label="Add" color="indigo-5" class="text-capitalize"></q-btn>
-                <q-btn label="Cancel" color="primary" class="text-capitalize" @click="add_model.wip=false"></q-btn>
+                <q-btn
+                  label="添加"
+                  @click="addTask(list.id)"
+                  color="indigo-5"
+                  class="text-capitalize"
+                ></q-btn>
+                <q-btn
+                  label="取消"
+                  color="primary"
+                  class="text-capitalize"
+                  @click="close_list_model()"
+                ></q-btn>
               </q-card-actions>
             </q-card>
             <q-item v-else>
-              <q-btn icon="add" rounded flat label="Add Task" @click="add_model.wip=true"/>
+              <q-btn
+                icon="add"
+                rounded
+                flat
+                label="Add Task"
+                @click="addListmodel(index)"
+              />
             </q-item>
           </q-scroll-area>
         </q-card>
       </div>
 
       <div class="col-3 q-px-xs">
-        <q-card class="q-pa-xs custom_bg2 ">
-          <q-item style="cursor: move;" class="q-pa-none text-white q-pa-sm">
-            <q-item-section class="text-h6 text-weight-bolder text-color">BLOCKED
-            </q-item-section>
-            <q-item-section avatar>
-              <q-icon name="more_vert" class="cursor-pointer">
-                <q-menu transition-show="fade" transition-hide="fade">
-                  <q-list style="min-width: 100px">
-                    <q-item clickable>
-                      <q-item-section>Remove</q-item-section>
-                    </q-item>
-                    <q-item clickable>
-                      <q-item-section>Option 1</q-item-section>
-                    </q-item>
-                    <q-item clickable>
-                      <q-item-section>Option 2</q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-menu>
-              </q-icon>
-            </q-item-section>
-          </q-item>
-
-          <q-scroll-area
-            :thumb-style="thumbStyle"
-            :bar-style="barStyle"
-            :style="{'height': getHeight}"
-            class="col"
-            ref="first"
-          >
-            <draggable
-              class="list-group"
-              :list="blocked_task"
-              group="tasks"
-              v-bind="dragOptions"
-              @start="drag = true"
-              @end="drag = false"
-            >
-              <q-card
-                v-for="(item, index) in blocked_task"
-                v-bind:key="index"
-                class="rounded-borders q-my-sm"
-                @mouseover="task_selected_index.blocked = index"
-                @mouseleave="task_selected_index.blocked  = null"
-              >
-                <q-card-section class="row q-pa-sm">
-                  <div class="col-12">
-                    <span class="text-weight-bold text-h6 q-ml-sm">{{item.title}}</span>
-                    <span class="float-right text-grey-8 q-mt-sm">{{item.label}}
-
-                    <q-icon
-                      filled
-                      size="xs"
-                      name="close"
-                      class="absolute-top-right q-mr-md q-mt-xs text-red"
-                      v-if="index==task_selected_index.blocked"
-                      @click="deleteTask('blocked', task_selected_index.blocked)"
-                    />
-                    </span>
-                  </div>
-                </q-card-section>
-                <q-card-section class="q-pa-sm">
-                  <q-chip dense v-for="(tag, index) in item.tags" :key="index" :color="tag.color" text-color="white">
-                    {{tag.name}}
-                  </q-chip>
-                </q-card-section>
-                <q-card-section class="q-pa-sm text-grey-8">
-                  {{item.description}}
-                </q-card-section>
-              </q-card>
-            </draggable>
-            <q-card class="full-width" v-if="add_model.blocked">
-              <q-card-section>
-                <div class="text-h6">
-                  Add Task
-                </div>
-              </q-card-section>
-              <q-card-section class="q-pa-sm">
-                <q-input dense v-model="add_data.blocked.title" label="Title" outlined/>
-                <q-input dense class="q-mt-sm" v-model="add_data.blocked.label" label="Label" outlined/>
-                <q-input dense class="q-mt-sm" v-model="add_data.blocked.description" label="Description" outlined/>
-              </q-card-section>
-              <q-card-actions align="right" class="q-pa-sm text-grey-8">
-                <q-btn label="Add" color="indigo-5" class="text-capitalize"></q-btn>
-                <q-btn label="Cancel" color="primary" class="text-capitalize" @click="add_model.blocked=false"></q-btn>
-              </q-card-actions>
-            </q-card>
-            <q-item v-else>
-              <q-btn icon="add" rounded flat label="Add Task" @click="add_model.blocked=true"/>
-            </q-item>
-          </q-scroll-area>
-        </q-card>
+        <q-btn
+          v-show="showAddBtn"
+          @click="clickAddList"
+          icon="playlist_add"
+          color="amber"
+          label="添加列表"
+        ></q-btn>
+        <div v-show="showAddBtn === false">
+          <q-input outlined v-model="listName" />
+          <div class="fit row mg10 justify-end ">
+            <div class="col offset-sm-6">
+              <q-btn @click="showBtnAdd" flat label="取消"></q-btn>
+            </div>
+            <div class="col">
+              <q-btn
+                rounded
+                @click="addList"
+                color="orange"
+                label="添加"
+              ></q-btn>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div class="col-3 q-px-xs">
-        <q-card class="q-pa-xs custom_bg2 ">
-          <q-item style="cursor: move;" class="q-pa-none text-white q-pa-sm">
-            <q-item-section class="text-h6 text-weight-bolder text-color">已完成
-            </q-item-section>
-            <q-item-section avatar>
-              <q-icon name="more_vert" class="cursor-pointer">
-                <q-menu transition-show="fade" transition-hide="fade">
-                  <q-list style="min-width: 100px">
-                    <q-item clickable>
-                      <q-item-section>Remove</q-item-section>
-                    </q-item>
-                    <q-item clickable>
-                      <q-item-section>Option 1</q-item-section>
-                    </q-item>
-                    <q-item clickable>
-                      <q-item-section>Option 2</q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-menu>
-              </q-icon>
-            </q-item-section>
-          </q-item>
-
-          <q-scroll-area
-            :thumb-style="thumbStyle"
-            :bar-style="barStyle"
-            :style="{'height': getHeight}"
-            class="col"
-            ref="first"
-          >
-            <draggable
-              class="list-group"
-              :list="completed_task"
-              group="tasks"
-              v-bind="dragOptions"
-              @start="drag = true"
-              @end="drag = false"
-            >
-              <q-card
-                v-for="(item, index) in completed_task"
-                v-bind:key="index"
-                class="rounded-borders q-my-sm"
-                @mouseover="task_selected_index.completed = index"
-                @mouseleave="task_selected_index.completed = null"
-              >
-                <q-card-section class="row q-pa-sm">
-                  <div class="col-12">
-                    <span class="text-weight-bold text-h6 q-ml-sm">{{item.title}}</span>
-                    <span class="float-right text-grey-8 q-mt-sm">{{item.label}}
-                    <q-icon
-                      filled
-                      size="xs"
-                      name="close"
-                      class="absolute-top-right q-mr-md q-mt-xs text-red"
-                      v-if="index==task_selected_index.completed"
-                      @click="deleteTask('completed', task_selected_index.completed)"
-                    />
-                    </span>
-                  </div>
-                </q-card-section>
-                <q-card-section class="q-pa-sm">
-                  <q-chip dense v-for="(tag, index) in item.tags" :key="index" :color="tag.color" text-color="white">
-                    {{tag.name}}
-                  </q-chip>
-                </q-card-section>
-                <q-card-section class="q-pa-sm text-grey-8">
-                  {{item.description}}
-                </q-card-section>
-              </q-card>
-            </draggable>
-            <q-card class="full-width" v-if="add_model.completed">
-              <q-card-section>
-                <div class="text-h6">
-                  Add Task
-                </div>
-              </q-card-section>
-              <q-card-section class="q-pa-sm">
-                <q-input dense v-model="add_data.completed.title" label="Title" outlined/>
-                <q-input dense class="q-mt-sm" v-model="add_data.completed.label" label="Label" outlined/>
-                <q-input dense class="q-mt-sm" v-model="add_data.completed.description" label="Description" outlined/>
-              </q-card-section>
-              <q-card-actions align="right" class="q-pa-sm text-grey-8">
-                <q-btn label="Add" color="indigo-5" class="text-capitalize"></q-btn>
-                <q-btn label="Cancel" color="primary" class="text-capitalize"
-                       @click="add_model.completed=false"></q-btn>
-              </q-card-actions>
-            </q-card>
-            <q-item v-else>
-              <q-btn icon="add" rounded flat label="Add Task" @click="add_model.completed=true"/>
-            </q-item>
-          </q-scroll-area>
-        </q-card>
-      </div>
-
     </div>
-    <q-resize-observer @resize="onResize"/>
+    <task-edit :visible.sync="taskEditDialog" :taskId="editTaskId" />
+    <q-resize-observer @resize="onResize" />
   </q-page>
 </template>
 
 <script>
-    import Vue from "vue";
-    import draggable from "vuedraggable";
-
-
-    Vue.component("draggable", draggable);
-    export default {
-        name: "TaskBoard",
-        data() {
-            return {
-                task_selected_index:{
-                    blocked: null,
-                    completed: null,
-                    planned: null,
-                    wip: null
-                },
-                thumbStyle: {
-                    right: '4px',
-                    borderRadius: '5px',
-                    backgroundColor: '#027be3',
-                    width: '5px',
-                    opacity: 0.75
-                },
-                add_model: {
-                    blocked: false,
-                    completed: false,
-                    planned: false,
-                    wip: false
-                },
-                add_data: {
-                    blocked: {},
-                    completed: {},
-                    planned: {},
-                    wip: {}
-                },
-                size: {},
-                barStyle: {
-                    right: '2px',
-                    borderRadius: '9px',
-                    backgroundColor: '#027be3',
-                    width: '9px',
-                    opacity: 0.2
-                },
-                planned_task: [
-                    {
-                        title: 'Buy milk',
-                        label: '15 mins',
-                        tags: [{name: 'Error', color: 'negative'}, {name: 'Warning', color: 'warning'}],
-                        description: '2 Gallons of milk at the Deli store'
-                    },
-                    {
-                        title: 'Dispose Garbage',
-                        label: '10 mins',
-                        tags: [{name: 'Info', color: 'info'}, {name: 'Success', color: 'positive'}],
-                        description: 'Sort out recyclable and waste as needed'
-                    },
-                    {
-                        title: 'Write Blog',
-                        label: '10 mins',
-                        tags: [{name: 'Warning', color: 'warning'}],
-                        description: 'Can AI make memes?'
-                    },
-                    {
-                        title: 'Pay Rent',
-                        label: '5 mins',
-                        tags: [{name: 'Error', color: 'negative'}, {name: 'Warning', color: 'warning'}, {
-                            name: 'Info',
-                            color: 'info'
-                        }],
-                        description: 'Transfer to bank account'
-                    }
-                ],
-                wip_task: [
-                    {
-                        title: 'Clean House',
-                        label: '30 mins',
-                        tags: [{name: 'Error', color: 'negative'}, {name: 'Success', color: 'positive'}],
-                        description: 'Soap wash and polish floor. Polish windows and doors. Scrap all broken glasses'
-                    },
-                    {
-                        title: 'Go Trekking',
-                        label: '30 mins',
-                        tags: [{name: 'Info', color: 'info'}, {name: 'Success', color: 'positive'}, {
-                            name: 'Info',
-                            color: 'info'
-                        }, {name: 'Success', color: 'positive'}, {name: 'Info', color: 'info'}, {
-                            name: 'Success',
-                            color: 'positive'
-                        }],
-                        description: 'Completed 10km on cycle'
-                    },
-                ],
-                blocked_task: [
-                    {
-                        title: 'Morning Jog',
-                        label: '30 mins',
-                        tags: [{name: 'Error', color: 'negative'}],
-                        description: 'Track using fitbit'
-                    },
-                ],
-                completed_task: [
-                    {
-                        title: 'Practice Meditation',
-                        label: '15 mins',
-                        tags: [],
-                        description: 'Use Headspace app'
-                    },
-                    {
-                        title: 'Maintain Daily Journal',
-                        label: '15 mins',
-                        tags: [],
-                        description: 'Use Spreadsheet for now'
-                    },
-                    {
-                        title: 'Go Trekking',
-                        label: '15 mins',
-                        tags: [{name: 'Info', color: 'info'}, {name: 'Success', color: 'positive'}],
-                        description: 'Completed 10km on cycle'
-                    },
-                ],
-
-            };
-        },
-        computed: {
-            dragOptions() {
-                return {
-                    animation: 200,
-                    group: "description",
-                    disabled: false,
-                    ghostClass: "ghost"
-                };
-            },
-            getHeight() {
-                return this.size.height - 90 + 'px'
+import draggable from 'vuedraggable'
+import { addList, myList } from 'src/api/taskList'
+import { addTask, deleteTask, updateList } from 'src/api/task'
+import { Task } from 'src/model/Task'
+import taskEdit from './components/TaskEdit'
+export default {
+  name: 'TaskBoard',
+  components: { draggable, taskEdit },
+  data () {
+    return {
+      taskEditDialog: false,
+      editTaskId: 0,
+      showAddBtn: true,
+      listName: '',
+      task_selected_index: {
+        blocked: null,
+        completed: null,
+        planned: null,
+        wip: -1
+      },
+      tags: [{ name: '工作' }, { name: '生活' }],
+      task: {
+        name: '',
+        detail: ''
+      },
+      draging: {
+        taskId: 0,
+        toListId: 0
+      },
+      thumbStyle: {
+        right: '4px',
+        borderRadius: '5px',
+        backgroundColor: '#027be3',
+        width: '5px',
+        opacity: 0.75
+      },
+      taskLists: [
+        {
+          id: 0,
+          name: '待办(eg)',
+          tasks: [
+            {
+              name: '吃饭(eg)',
+              detail: '吃莎拉',
+              createTime: new Date().toString(),
+              tags: [
+                {
+                  name: '',
+                  color: ''
+                }
+              ]
             }
-        },
-        methods: {
-            onResize(size) {
-                this.size = size
-            },
-            deleteTask(name,index){
-              if(name=='panned'){
-                  this.planned_task.splice(index, 1)
-              }
-              if(name=='wip'){
-                  this.wip_task.splice(index, 1)
-              }
-              if(name=='completed'){
-                  this.completed_task.splice(index, 1)
-              }
-              if(name=='blocked'){
-                  this.blocked_task.splice(index, 1)
-              }
-            }
+          ]
         }
-    };
+      ],
+      add_model: {
+        blocked: false,
+        completed: false,
+        planned: false,
+        wip: -1
+      },
+      add_data: {
+        blocked: {},
+        completed: {},
+        planned: {},
+        wip: {},
+        task: new Task()
+      },
+      size: {},
+      barStyle: {
+        right: '2px',
+        borderRadius: '9px',
+        backgroundColor: '#027be3',
+        width: '5px',
+        opacity: 0.2
+      }
+    }
+  },
+  created () {
+    this.taskEditDialog = false
+    this.initTaskData()
+  },
+  computed: {
+    dragOptions () {
+      return {
+        animation: 200,
+        group: 'description',
+        disabled: false,
+        ghostClass: 'ghost'
+      }
+    },
+    getHeight () {
+      return this.size.height - 90 + 'px'
+    }
+  },
+  methods: {
+    initTaskData () {
+      myList().then(response => {
+        if (response.code === 0) {
+          this.taskLists = response.data
+        }
+      })
+    },
+    addListmodel (index) {
+      this.add_model.wip = index
+    },
+    close_list_model () {
+      this.add_model.wip = -1
+      this.add_data.task = {
+        name: '',
+        detail: '',
+        list: {
+          id: 0
+        }
+      }
+    },
+    addTask (listId) {
+      console.log(this.add_data.task)
+      this.add_data.task.list.id = listId
+      addTask(this.add_data.task).then(response => {
+        if (response.code === 0) {
+          this.initTaskData()
+          this.add_model.wip = -1
+          this.add_data.task = new Task()
+        }
+      })
+    },
+    showBtnAdd () {
+      this.showAddBtn = true
+    },
+    addList () {
+      addList(this.listName).then(response => {
+        console.log(response)
+        if (response.code === 0) {
+          this.showAddBtn = true
+          this.initTaskData()
+        }
+      })
+    },
+    clickAddList () {
+      this.showAddBtn = false
+    },
+    onResize (size) {
+      this.size = size
+    },
+    deleteTask (taskId) {
+      deleteTask(taskId).then(response => {
+        if (response.code === 0) {
+          this.initTaskData()
+        }
+      })
+    },
+    log (evt) {
+      if (evt.added) {
+        this.draging.taskId = evt.added.element.id
+      }
+      // window.console.log(evt)
+    },
+    checkMove (evt) {
+      // console.log(evt.relatedContext.component)
+      return true
+    },
+    onEnd (evt) {
+      this.draging.toListId = evt.to.id
+      updateList(this.draging.taskId, this.draging.toListId).then(response => {
+        if (response.code === 0) {
+          this.initTaskData()
+        }
+      })
+    },
+    clickTask (taskId) {
+      // console.log(this.$refs.taskDialog)
+      // this.$refs.taskDialog.active = true
+      this.editTaskId = taskId
+      this.taskEditDialog = true
+    },
+    changeDialog (val) {
+      this.$data.taskEditDialog = val
+    }
+  },
+  watch: {
+    taskEditDialog (value) {
+      this.initTaskData()
+    }
+  }
+}
 </script>
 
 <style scoped>
-  .custom_bg {
-    background-image: linear-gradient(to bottom, #a18cd1 0%, #fbc2eb 100%);
-  }
+.custom_bg {
+  background-image: linear-gradient(to bottom, #a18cd1 0%, #fbc2eb 100%);
+}
 
-  .custom_bg2 {
-    background-image: linear-gradient(to bottom , #4facfe 0%, #00f2fe 100%);
-  }
+.custom_bg2 {
+  background-image: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+}
 
-  .custom_bg3 {
-    background-image: linear-gradient(to right, #74ebd5 0%, #9face6 100%);
-  }
+.custom_bg3 {
+  background-image: linear-gradient(to right, #74ebd5 0%, #9face6 100%);
+}
 
-  .custom_bg4 {
-    background-image: linear-gradient(to bottom, #a18cd1 0%, #fbc2eb 100%);
-  }
+.custom_bg4 {
+  background-image: linear-gradient(to bottom, #a18cd1 0%, #fbc2eb 100%);
+}
 
-  .text-color {
-    color: white
-  }
+.text-color {
+  color: white;
+}
 </style>
