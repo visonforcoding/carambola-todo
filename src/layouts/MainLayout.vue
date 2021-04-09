@@ -12,10 +12,34 @@
         />
 
         <q-toolbar-title>
-          Carambola Todo
+          <img
+            width="20"
+            height="20"
+            src="../assets/linux-512x512.png"
+          />杨桃看板
         </q-toolbar-title>
 
-        <div> v{{ $q.version }}</div>
+        <div>v{{ $q.version }}</div>
+        <div>
+          <q-btn-dropdown stretch flat :label="username">
+            <q-list>
+              <q-item clickable v-close-popup tabindex="0">
+                <q-item-section avatar>
+                  <q-avatar>
+                    <img src="../assets/avatar.jpg" />
+                  </q-avatar>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Photos</q-item-label>
+                  <q-item-label caption>February 22, 2016</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-icon name="info" />
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -26,30 +50,29 @@
       content-class="bg-grey-1"
     >
       <q-list>
-        <q-item-label
-          header
-          class="text-grey-8"
-        >
+        <q-item-label header class="text-grey-8">
           Essential Links
         </q-item-label>
         <EssentialLink
           v-for="link in essentialLinks"
           :key="link.title"
           v-bind="link"
+          v-bind:data-id="link.link"
+          :link="link.link"
         />
-      </q-list>
-      <q-item
-        clickable
-        v-ripple
-        @click="loginOut"
-        active-class="my-menu-link"
-      >
-        <q-item-section avatar>
-          <q-icon name="send" />
-        </q-item-section>
+        <q-item
+          clickable
+          v-ripple
+          @click="loginOut"
+          active-class="my-menu-link"
+        >
+          <q-item-section avatar>
+            <q-icon name="send" />
+          </q-item-section>
 
-        <q-item-section>退出</q-item-section>
-      </q-item>
+          <q-item-section>退出</q-item-section>
+        </q-item>
+      </q-list>
     </q-drawer>
 
     <q-page-container>
@@ -64,16 +87,10 @@ import { loginOut } from 'src/api/loginReq'
 
 const linksData = [
   {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
+    title: '关于我',
+    caption: 'visonforcoding.github.io',
     icon: 'record_voice_over',
-    link: '/user/login-out'
+    link: 'https://visonforcoding.github.io'
   }
 ]
 
@@ -83,16 +100,14 @@ export default {
   data () {
     return {
       leftDrawerOpen: false,
-      essentialLinks: linksData
+      essentialLinks: linksData,
+      username: localStorage.getItem('username')
     }
   },
-  created () {
-
-  },
+  created () {},
   methods: {
-
     loginOut (values) {
-      loginOut(this.loginInfo).then((response) => {
+      loginOut(this.loginInfo).then(response => {
         console.log(response)
         if (response.code === 0) {
           sessionStorage.clear()

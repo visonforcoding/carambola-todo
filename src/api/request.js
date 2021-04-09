@@ -1,6 +1,7 @@
 import axios from 'axios'
 import config from 'src/config'
 import Vue from 'vue'
+import Router from 'src/router/index'
 
 // const development = config.isDev
 // const baseURL = development ? `${config.getBaseUrl()}/api` : config.getBaseUrl()
@@ -9,7 +10,7 @@ let baseURL = config.getBaseUrl()
 if (config.isDev) {
   baseURL = baseURL + '/dev'
 } else {
-  baseURL = baseURL + '/api'
+  baseURL = config.baseUrl.prod
 }
 const service = axios.create({
   // baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
@@ -23,13 +24,16 @@ service.interceptors.request.use(
   config => {
     if (config.method === 'POST') {
       config.headers = {
-        'content-type': 'application/json'
+        'Content-Type': 'application/json'
       }
     }
     if (config.method === 'DELETE') {
       config.headers = {
-        'content-type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded'
       }
+    }
+    if (localStorage.getItem('x-token')) {
+      config.headers['x-token'] = localStorage.getItem('x-token')
     }
     return config
   }
@@ -40,6 +44,22 @@ service.interceptors.response.use(
   response => {
     const res = response.data
     // 状态逻辑
+    if (res.code === 401) {
+      Vue.notify({
+        group: 'common',
+        text: res.msg,
+        type: 'error'
+      })
+      setTimeout(function () {
+        sessionStorage.clear()
+        // location.href = 'login'
+        Router.push({
+          path: 'login'
+        })
+        console.log(Router)
+      }, 1000)
+      return new Promise(() => {})
+    }
     return res
   },
   error => {

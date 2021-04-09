@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: 'learn-mall',
+  title: '杨桃看板',
 
   /**
    * @type {boolean} true | false
@@ -18,21 +18,21 @@ module.exports = {
     dev: 'http://127.0.0.1:5000', // fab pack:csc-dev
     stg: 'http://domain.cn', // fab pack:csc-stg
     gra: 'http://domain.cn', // fab pack:csc-gra
-    prod: 'http://domain.cn/' // fab pack:csc-prod
+    prod: 'http://todo.visonforcoding.xyz' // fab pack:csc-prod
   },
   serverPort: {
     py: '5000',
     java: '8080'
   },
-  getBaseUrl() {
+  getBaseUrl () {
     // const API_URL = process.env.VUE_APP_API_URL || 'development'
     // let key = API_URL.replace(/^csc-(.*)/, '$1')
     let requestUrl = ''
-    let prefix = 'http://'
-    let host = location.hostname
-    let port = location.port
+    const prefix = 'http://'
+    const host = location.hostname
+    const port = location.port
 
-    requestUrl = prefix + host + ":" + port
+    requestUrl = prefix + host + ':' + port
     return requestUrl
   },
   /**

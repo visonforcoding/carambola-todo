@@ -2,7 +2,6 @@ import Vue from 'vue'
 import Notifications from 'vue-notification'
 import VueTimeago from 'vue-timeago'
 
-
 Vue.use(Notifications)
 Vue.use(VueTimeago, {
   name: 'Timeago', // Component name, `Timeago` by default

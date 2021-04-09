@@ -1,9 +1,8 @@
 <template>
   <q-item
     clickable
-    tag="a"
-    target="_blank"
-    :href="link"
+    tag="div"
+    @click="onClick(link)"
   >
     <q-item-section
       v-if="icon"
@@ -22,6 +21,7 @@
 </template>
 
 <script>
+import { shell } from 'electron'
 export default {
   name: 'EssentialLink',
   props: {
@@ -43,6 +43,11 @@ export default {
     icon: {
       type: String,
       default: ''
+    }
+  },
+  methods: {
+    onClick (link) {
+      shell.openExternal(link)
     }
   }
 }

@@ -23,9 +23,9 @@
             dense
             v-for="tag in task.tags"
             :key="tag.id"
-            :color="tag.color"
+            :style="'background-color: '+tag.color"
             text-color="white"
-            @remove="removeTaskTag($event,tag)"
+            @remove="removeTaskTag($event, tag)"
           >
             {{ tag.name }}
           </q-chip>
@@ -44,17 +44,17 @@
           ></q-btn>
         </q-card-actions>
       </div>
-      <q-dialog v-model="showTagDialog" @input="onInput">
+      <q-dialog  v-model="showTagDialog" @input="onInput">
         <div v-show="showAddTag" class="dialog-box" style="width:25%">
-           <q-chip
+          <q-chip
             clickable
             removable
             dense
             v-for="tag in tags"
             :key="tag.id"
-            :color="tag.color"
+            :style="'background-color: '+tag.color"
             text-color="white"
-            @remove="removeTag($event,tag)"
+            @remove="removeTag($event, tag)"
             @click="choseTag(tag)"
             class="mb10"
           >
@@ -66,7 +66,16 @@
         </div>
         <div class="dialog-box" style="width:25%" v-show="showAddTag == false">
           <q-input outlined v-model="tagName" label="名称" />
-          <q-select v-model="tagColor" :options="colors" label="颜色" />
+          <!-- <q-select v-model="tagColor" :options="colors" label="颜色" /> -->
+          <div class="row mg10">
+          <q-color
+            v-model="tagColor"
+            no-footer
+            default-view="palette"
+            class="my-picker"
+            default-value="#33ff33"
+          />
+          </div>
           <div class="row mg10 justify-end">
             <div class="col offset-md-4">
               <q-btn @click="showAddTag = true" flat label="取消"></q-btn>
@@ -177,7 +186,7 @@ export default {
     },
     editTask () {
       console.log(this.task)
-      editTask(this.task).then((response) => {
+      editTask(this.task).then(response => {
         if (response.code === 0) {
           this.active = false
         }
@@ -188,7 +197,7 @@ export default {
       this.task.tags.splice(i, 1)
     },
     removeTag (state, tag) {
-      deleteTag(tag.id).then((response) => {
+      deleteTag(tag.id).then(response => {
         if (response.code === 0) {
           this.fetchTag()
         }

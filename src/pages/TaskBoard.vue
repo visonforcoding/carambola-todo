@@ -49,7 +49,7 @@
               :componentData="list"
             >
               <q-card
-                v-for="(task, index) in list.tasks"
+                v-for="task in list.tasks"
                 v-bind:key="task.id"
                 class="rounded-borders q-my-sm"
                 @mouseover="$set(task_selected_index, 'planned', task.id)"
@@ -105,7 +105,7 @@
                     dense
                     v-for="tag in task.tags"
                     :key="tag.id"
-                    :color="tag.color"
+                    :style="'background-color: '+tag.color"
                     text-color="white"
                   >
                     {{ tag.name }}
@@ -118,16 +118,11 @@
             </draggable>
 
             <q-card class="full-width" v-if="add_model.wip === index">
-              <q-card-section>
-                <div class="text-h6">
-                  添加任务
-                </div>
-              </q-card-section>
               <q-card-section class="q-pa-sm">
                 <q-input
                   dense
                   v-model="add_data.task.name"
-                  label="Title"
+                  label="卡片名称"
                   outlined
                 />
                 <!-- <q-input dense class="q-mt-sm" v-model="add_data.wip.label" label="Label" outlined/> -->
@@ -135,22 +130,24 @@
                   dense
                   class="q-mt-sm"
                   v-model="add_data.task.detail"
-                  label="Description"
+                  label="卡片描述"
                   outlined
                 />
               </q-card-section>
               <q-card-actions align="right" class="q-pa-sm text-grey-8">
                 <q-btn
-                  label="添加"
-                  @click="addTask(list.id)"
-                  color="indigo-5"
-                  class="text-capitalize"
-                ></q-btn>
-                <q-btn
+                  flat
                   label="取消"
                   color="primary"
                   class="text-capitalize"
                   @click="close_list_model()"
+                ></q-btn>
+                <q-btn
+                  rounded
+                  label="添加"
+                  @click="addTask(list.id)"
+                  color="indigo-5"
+                  class="text-capitalize"
                 ></q-btn>
               </q-card-actions>
             </q-card>
@@ -159,7 +156,7 @@
                 icon="add"
                 rounded
                 flat
-                label="Add Task"
+                label="添加卡片"
                 @click="addListmodel(index)"
               />
             </q-item>
@@ -169,6 +166,7 @@
 
       <div class="col-3 q-px-xs">
         <q-btn
+          flat
           v-show="showAddBtn"
           @click="clickAddList"
           icon="playlist_add"
@@ -296,6 +294,7 @@ export default {
   },
   methods: {
     initTaskData () {
+      this.listName = ''
       myList().then(response => {
         if (response.code === 0) {
           this.taskLists = response.data
@@ -362,6 +361,7 @@ export default {
       return true
     },
     onEnd (evt) {
+      console.log(evt)
       this.draging.toListId = evt.to.id
       updateList(this.draging.taskId, this.draging.toListId).then(response => {
         if (response.code === 0) {

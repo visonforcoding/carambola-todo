@@ -12,6 +12,14 @@ export function login (params) {
   })
 }
 
+export function register (params) {
+  return request({
+    url: '/user/register',
+    method: 'post',
+    data: params
+  })
+}
+
 export function loginOut (params) {
   return request({
     url: '/user/login-out',

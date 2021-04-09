@@ -12,7 +12,7 @@
           </q-card-section>
           <q-card-section>
             <div class="text-center q-pt-lg">
-              <div class="col text-h6 ellipsis">登录</div>
+              <div class="col text-h6 ellipsis">账号注册</div>
             </div>
           </q-card-section>
           <q-card-section>
@@ -27,24 +27,23 @@
               <q-input
                 type="password"
                 filled
-                v-model="loginInfo.pwd"
+                v-model="loginInfo.password"
                 label="密码"
+                lazy-rules
+              />
+              <q-input
+                type="email"
+                filled
+                v-model="loginInfo.email"
+                label="邮箱 用于激活账号"
                 lazy-rules
               />
 
               <div class="row">
                 <div class="col-3">
                   <q-btn
-                    label="登录"
-                    @click="onSubmit"
-                    type="button"
-                    color="primary"
-                  />
-                </div>
-                <div class="col-3">
-                  <q-btn
                     label="注册"
-                    to="/register"
+                    @click="register"
                     type="button"
                     color="primary"
                   />
@@ -59,26 +58,26 @@
 </template>
 
 <script>
-import { login } from 'src/api/loginReq'
+import { register } from 'src/api/loginReq'
 export default {
   data () {
     return {
       loading: false,
       loginInfo: {
         username: '',
-        pwd: ''
+        password: '',
+        email: ''
       }
     }
   },
   methods: {
-    onSubmit (values) {
+    register (values) {
       this.loading = true
-      login(this.loginInfo).then(response => {
+      register(this.loginInfo).then(response => {
         console.log(response)
         if (response.code === 0) {
-          console.log(response.data)
-          localStorage.setItem('x-token', response.data.token)
-          localStorage.setItem('username', response.data.username)
+          console.log(response.data.username)
+          sessionStorage.setItem('token', response.data.username)
           this.$router.push('/')
         } else {
           this.$notify({
